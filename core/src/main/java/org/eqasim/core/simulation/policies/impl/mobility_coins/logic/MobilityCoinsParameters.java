@@ -175,10 +175,17 @@ public class MobilityCoinsParameters implements ParameterDefinition {
 
     // === Parameters for SUFFI allocation ===
     // Gewichtungsfaktoren für S = base + W1*ptNeed + W2*carNeed + W3*incomeNeed
-    // base = 0.30 * (W1 + W2 + W3)
+    // base = 1/3 * (W1 + W2 + W3)
     public double suffiWeightPt      = 1.0;
     public double suffiWeightVehicle = 1.0;
     public double suffiWeightIncome  = 1.0;
+
+    // === Parameters for UTIL allocation ===
+    // Gewichtungsfaktoren für S = W1*(SustainableModalSplit + PT_ModalSplit) + W2*PT
+    public double utilWeightModalSplit       = 1.0;
+    public double utilWeightPt               = 1.0;
+    // Schwellenwert für PT_ModalSplit (Anteil 0–1)
+    public double utilPtModalSplitThreshold  = 0.155;
 
     // === Parameters for Trip Dropping (Elastic Demand) ===
     // Enable/disable trip dropping strategy (RemoveExpensiveTrips)

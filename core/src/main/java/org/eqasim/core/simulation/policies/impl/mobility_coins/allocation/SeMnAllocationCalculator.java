@@ -62,8 +62,8 @@ public class SeMnAllocationCalculator implements AllocationCalculator {
             double zW = parseZone(ap.workZone);
             double zE = parseZone(ap.educationZone);
             double pt = ap.ptAverageRaptor != null ? (double) ap.ptAverageRaptor : Double.NaN;
-            double d  = ap.travelDistanceM;
-            double t  = ap.travelTimeS;
+            double d  = ap.travelDistanceCarCarpPtM;
+            double t  = ap.travelTimeCarCarpPtS;
 
             raw.put(pid, new double[]{zH, zW, zE, pt, d, t});
 
@@ -79,7 +79,7 @@ public class SeMnAllocationCalculator implements AllocationCalculator {
         }
 
         if (!hasPtData) {
-            logger.warn("pt_average_raptor ist für alle Agenten null – PT-Komponente neutral (0.5).");
+            logger.warn("pt_average_raptor ist für alle Agenten null – PT-Komponente wird 0.");
         }
 
         // --- Pass 2: Scores berechnen ---
@@ -96,7 +96,7 @@ public class SeMnAllocationCalculator implements AllocationCalculator {
             double zoneEduScore   = normalize(r[2], minZE, maxZE);
             double ptScore        = hasPtData && !Double.isNaN(r[3])
                                     ? 1.0 - normalize(r[3], minPt, maxPt)
-                                    : 0.5;
+                                    : 0.0;
             double distScore      = normalize(r[4], minDist, maxDist);
             double timeScore      = normalize(r[5], minTime, maxTime);
 

@@ -79,7 +79,7 @@ public class VerticalAllocationCalculator implements AllocationCalculator {
         }
 
         if (!hasPtData) {
-            logger.warn("pt_average_raptor ist für alle Agenten null – PT-Komponente wird neutral gesetzt (0.5).");
+            logger.warn("pt_average_raptor ist für alle Agenten null – PT-Komponente wird 0.");
         }
 
         // --- Pass 2: Scores berechnen ---
@@ -97,7 +97,7 @@ public class VerticalAllocationCalculator implements AllocationCalculator {
             double incomeScore    = 1.0 - normalize(r[0], minIncome, maxIncome); // invertiert
             double ptScore        = hasPtData && !Double.isNaN(r[1])
                                     ? 1.0 - normalize(r[1], minPt, maxPt)        // invertiert
-                                    : 0.5;                                        // neutral bei fehlenden Daten
+                                    : 0.0;
             double vehScore       = r[2];                                         // bereits 0 oder 1
             double householdScore = normalize(r[3], minHh, maxHh);               // nicht invertiert
 

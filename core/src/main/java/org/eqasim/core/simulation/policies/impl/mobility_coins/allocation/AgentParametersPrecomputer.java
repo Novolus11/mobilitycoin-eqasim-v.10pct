@@ -160,9 +160,11 @@ public class AgentParametersPrecomputer {
     private ZoneResolver zoneResolver = null;
 
     /**
-     * Vorberechnete Baseline-Reisedaten je Person: pid → [distanceM, travelTimeS].
+     * Vorberechnete Baseline-Reisedaten je Person:
+     * pid → double[7]: [0]=dist car+carp+pt (m), [1]=time car+carp+pt (s),
+     *                  [2]=car dist (m), [3]=carp dist (m), [4]=pt dist (m),
+     *                  [5]=bicycle dist (m), [6]=walk dist (m).
      * Befüllt durch {@link #readPerPersonTravel} aus eqasim_trips_moco.csv.
-     * Leere Map (nicht null) wenn kein Baseline-Lauf verfügbar.
      */
     private Map<String, double[]> perPersonTravel = new HashMap<>();
 
@@ -526,9 +528,14 @@ public class AgentParametersPrecomputer {
             ptAverageRaptor = (int) Math.round((double) rSum / rCnt);
         }
 
-        double[] travelData    = perPersonTravel.getOrDefault(personId, new double[2]);
-        double travelDistanceM = travelData[0];
-        double travelTimeS     = travelData[1];
+        double[] travelData               = perPersonTravel.getOrDefault(personId, new double[7]);
+        double travelDistanceCarCarpPtM   = travelData[0];
+        double travelTimeCarCarpPtS       = travelData[1];
+        double carM                       = travelData[2];
+        double carPassengerM              = travelData[3];
+        double ptM                        = travelData[4];
+        double bicycleM                   = travelData[5];
+        double walkM                      = travelData[6];
 
         return new AgentParams(
                 personId, householdId, age, employed, homeoffice, education,
@@ -537,7 +544,8 @@ public class AgentParametersPrecomputer {
                 ptHome, ptWork, ptEducation, ptAverage,
                 ptHomeRaptor, ptWorkRaptor, ptEducationRaptor, ptAverageRaptor,
                 homeZone, workZone, educationZone,
-                travelDistanceM, travelTimeS
+                travelDistanceCarCarpPtM, travelTimeCarCarpPtS,
+                carM, carPassengerM, ptM, bicycleM, walkM
         );
     }
 
@@ -686,7 +694,8 @@ public class AgentParametersPrecomputer {
             "pt_home;pt_work;pt_education;pt_average;" +
             "pt_home_raptor;pt_work_raptor;pt_education_raptor;pt_average_raptor;" +
             "home_zone;work_zone;education_zone;" +
-            "travel_distance;travel_time";
+            "travel_distance_car_carp_pt;travel_time_car_carp_pt;" +
+            "car_m;car_passenger_m;pt_m;bicycle_m;walk_m";
 
     public static void writeResults(Map<Id<Person>, AgentParams> results, String outputPath,
                                     long avgPtTravelTimeRoundedS) throws IOException {
@@ -791,8 +800,13 @@ public class AgentParametersPrecomputer {
         public final String  homeZone;
         public final String  workZone;
         public final String  educationZone;
-        public final double  travelDistanceM; // Summe Distanz (car+car_passenger+pt) aus Baseline in Metern
-        public final double  travelTimeS;     // Summe Reisezeit (car+car_passenger+pt) aus Baseline in Sekunden
+        public final double  travelDistanceCarCarpPtM; // Summe Distanz (car+car_passenger+pt) aus Baseline in Metern
+        public final double  travelTimeCarCarpPtS;    // Summe Reisezeit (car+car_passenger+pt) aus Baseline in Sekunden
+        public final double  carM;             // Distanz (car) aus Baseline in Metern
+        public final double  carPassengerM;    // Distanz (car_passenger) aus Baseline in Metern
+        public final double  ptM;              // Distanz (pt) aus Baseline in Metern
+        public final double  bicycleM;         // Distanz (bicycle) aus Baseline in Metern
+        public final double  walkM;            // Distanz (walk) aus Baseline in Metern
 
         public AgentParams(
                 String personId, String householdId, int age,
@@ -803,33 +817,40 @@ public class AgentParametersPrecomputer {
                 int ptHome, Integer ptWork, Integer ptEducation, int ptAverage,
                 Integer ptHomeRaptor, Integer ptWorkRaptor, Integer ptEducationRaptor, Integer ptAverageRaptor,
                 String homeZone, String workZone, String educationZone,
-                double travelDistanceM, double travelTimeS) {
-            this.personId            = personId;
-            this.householdId         = householdId;
-            this.age                 = age;
-            this.employed            = employed;
-            this.homeoffice          = homeoffice;
-            this.education           = education;
-            this.hasDrivingLicense   = hasDrivingLicense;
-            this.hasPtSubscription   = hasPtSubscription;
-            this.carAvailability     = carAvailability;
-            this.bicycleAvailability = bicycleAvailability;
-            this.income              = income;
-            this.highIncome          = highIncome;
-            this.householdSize       = householdSize;
-            this.ptHome              = ptHome;
-            this.ptWork              = ptWork;
-            this.ptEducation         = ptEducation;
-            this.ptAverage           = ptAverage;
-            this.ptHomeRaptor        = ptHomeRaptor;
-            this.ptWorkRaptor        = ptWorkRaptor;
-            this.ptEducationRaptor   = ptEducationRaptor;
-            this.ptAverageRaptor     = ptAverageRaptor;
-            this.homeZone            = homeZone;
-            this.workZone            = workZone;
-            this.educationZone       = educationZone;
-            this.travelDistanceM     = travelDistanceM;
-            this.travelTimeS         = travelTimeS;
+                double travelDistanceCarCarpPtM, double travelTimeCarCarpPtS,
+                double carM, double carPassengerM, double ptM,
+                double bicycleM, double walkM) {
+            this.personId                  = personId;
+            this.householdId               = householdId;
+            this.age                       = age;
+            this.employed                  = employed;
+            this.homeoffice                = homeoffice;
+            this.education                 = education;
+            this.hasDrivingLicense         = hasDrivingLicense;
+            this.hasPtSubscription         = hasPtSubscription;
+            this.carAvailability           = carAvailability;
+            this.bicycleAvailability       = bicycleAvailability;
+            this.income                    = income;
+            this.highIncome                = highIncome;
+            this.householdSize             = householdSize;
+            this.ptHome                    = ptHome;
+            this.ptWork                    = ptWork;
+            this.ptEducation               = ptEducation;
+            this.ptAverage                 = ptAverage;
+            this.ptHomeRaptor              = ptHomeRaptor;
+            this.ptWorkRaptor              = ptWorkRaptor;
+            this.ptEducationRaptor         = ptEducationRaptor;
+            this.ptAverageRaptor           = ptAverageRaptor;
+            this.homeZone                  = homeZone;
+            this.workZone                  = workZone;
+            this.educationZone             = educationZone;
+            this.travelDistanceCarCarpPtM  = travelDistanceCarCarpPtM;
+            this.travelTimeCarCarpPtS      = travelTimeCarCarpPtS;
+            this.carM                      = carM;
+            this.carPassengerM             = carPassengerM;
+            this.ptM                       = ptM;
+            this.bicycleM                  = bicycleM;
+            this.walkM                     = walkM;
         }
 
         /** Serialisiert diese Zeile als Semikolon-getrennten CSV-String (kein Zeilenumbruch). */
@@ -859,8 +880,13 @@ public class AgentParametersPrecomputer {
                     homeZone,
                     workZone,
                     educationZone,
-                    String.valueOf((long) Math.round(travelDistanceM)),
-                    String.valueOf((long) Math.round(travelTimeS))
+                    String.valueOf((long) Math.round(travelDistanceCarCarpPtM)),
+                    String.valueOf((long) Math.round(travelTimeCarCarpPtS)),
+                    String.valueOf((long) Math.round(carM)),
+                    String.valueOf((long) Math.round(carPassengerM)),
+                    String.valueOf((long) Math.round(ptM)),
+                    String.valueOf((long) Math.round(bicycleM)),
+                    String.valueOf((long) Math.round(walkM))
             );
         }
 
@@ -891,8 +917,13 @@ public class AgentParametersPrecomputer {
                     col(parts, idx, "home_zone"),
                     col(parts, idx, "work_zone"),
                     col(parts, idx, "education_zone"),
-                    colDouble(parts, idx, "travel_distance"),
-                    colDouble(parts, idx, "travel_time")
+                    colDouble(parts, idx, "travel_distance_car_carp_pt"),
+                    colDouble(parts, idx, "travel_time_car_carp_pt"),
+                    colDouble(parts, idx, "car_m"),
+                    colDouble(parts, idx, "car_passenger_m"),
+                    colDouble(parts, idx, "pt_m"),
+                    colDouble(parts, idx, "bicycle_m"),
+                    colDouble(parts, idx, "walk_m")
             );
         }
 
@@ -999,29 +1030,49 @@ public class AgentParametersPrecomputer {
             }
 
             if (personIdIdx < 0 || modeIdx < 0) {
-                logger.warn("readPerPersonTravel: Spalten 'person_id'/'mode' nicht in {} – travel_distance/travel_time=0.", csvPath);
+                logger.warn("readPerPersonTravel: Spalten 'person_id'/'mode' nicht in {} – alle Distanz-/Zeit-Spalten=0.", csvPath);
                 return result;
             }
-            if (distIdx < 0) logger.warn("readPerPersonTravel: Keine Distanz-Spalte gefunden – travel_distance=0.");
-            if (timeIdx < 0) logger.warn("readPerPersonTravel: Spalte 'travel_time' nicht gefunden – travel_time=0.");
+            if (distIdx < 0) logger.warn("readPerPersonTravel: Keine Distanz-Spalte gefunden – Distanzen=0.");
+            if (timeIdx < 0) logger.warn("readPerPersonTravel: Spalte 'travel_time' nicht gefunden – Zeit=0.");
 
+            // double[7]: [0]=dist car+carp+pt, [1]=time car+carp+pt,
+            //            [2]=car dist, [3]=carp dist, [4]=pt dist, [5]=bicycle dist, [6]=walk dist
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank()) continue;
                 String[] parts = line.split(";", -1);
                 if (parts.length <= Math.max(personIdIdx, modeIdx)) continue;
                 String mode = parts[modeIdx].trim();
-                if (!"car".equals(mode) && !"car_passenger".equals(mode) && !"pt".equals(mode)) continue;
 
-                String pid = parts[personIdIdx].trim();
-                double[] vals = result.computeIfAbsent(pid, k -> new double[2]);
+                boolean isCarCarpPt = "car".equals(mode) || "car_passenger".equals(mode) || "pt".equals(mode);
+                boolean isBicycle   = "bicycle".equals(mode);
+                boolean isWalk      = "walk".equals(mode);
+                if (!isCarCarpPt && !isBicycle && !isWalk) continue;
+
+                String pid     = parts[personIdIdx].trim();
+                double[] vals  = result.computeIfAbsent(pid, k -> new double[7]);
+                double   dist  = 0.0;
                 if (distIdx >= 0 && distIdx < parts.length) {
-                    try { vals[0] += Double.parseDouble(parts[distIdx].trim()); }
+                    try { dist = Double.parseDouble(parts[distIdx].trim()); }
                     catch (NumberFormatException ignored) {}
                 }
+                double time = 0.0;
                 if (timeIdx >= 0 && timeIdx < parts.length) {
-                    try { vals[1] += Double.parseDouble(parts[timeIdx].trim()); }
+                    try { time = Double.parseDouble(parts[timeIdx].trim()); }
                     catch (NumberFormatException ignored) {}
+                }
+
+                if (isCarCarpPt) {
+                    vals[0] += dist;
+                    vals[1] += time;
+                    if      ("car".equals(mode))            vals[2] += dist;
+                    else if ("car_passenger".equals(mode))  vals[3] += dist;
+                    else                                    vals[4] += dist; // pt
+                } else if (isBicycle) {
+                    vals[5] += dist;
+                } else {
+                    vals[6] += dist; // walk
                 }
             }
         }

@@ -58,7 +58,7 @@ public class HeLsAllocationCalculator implements AllocationCalculator {
         List<Double> distances = new ArrayList<>();
         for (Person person : population.getPersons().values()) {
             AgentParametersPrecomputer.AgentParams ap = agentParams.get(person.getId().toString());
-            if (ap != null) distances.add(ap.travelDistanceM);
+            if (ap != null) distances.add(ap.travelDistanceCarCarpPtM);
         }
         Collections.sort(distances);
 
@@ -85,7 +85,7 @@ public class HeLsAllocationCalculator implements AllocationCalculator {
             } else {
                 int vEmployment = employmentToV(ap.employed, ap.homeoffice);
                 int vAge        = ageToV(ap.age);
-                int vDist       = distanceToV(ap.travelDistanceM, p33, p67);
+                int vDist       = distanceToV(ap.travelDistanceCarCarpPtM, p33, p67);
                 score = w1 * vEmployment + w2 * vAge + w3 * vDist;
             }
             scores.put(person.getId(), score);

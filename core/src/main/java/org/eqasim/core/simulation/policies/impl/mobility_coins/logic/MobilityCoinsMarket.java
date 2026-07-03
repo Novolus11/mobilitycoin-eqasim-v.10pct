@@ -437,7 +437,22 @@ public class MobilityCoinsMarket implements IterationEndsListener {
                 }
 
             case UTIL:
-                return new UtilAllocationCalculator();
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    throw new IllegalStateException(
+                            "UTIL allocation benötigt --moco:agentParamsFilePath (agent_params.csv).");
+                }
+                try {
+                    Map<String, AgentParametersPrecomputer.AgentParams> utilAgentParams =
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath);
+                    return new UtilAllocationCalculator(
+                            utilAgentParams,
+                            parameters.utilWeightModalSplit,
+                            parameters.utilWeightPt,
+                            parameters.utilPtModalSplitThreshold);
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "UTIL: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
 
             case HE_SOCIO:
                 if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
