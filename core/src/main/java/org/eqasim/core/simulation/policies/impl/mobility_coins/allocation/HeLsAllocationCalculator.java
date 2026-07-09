@@ -64,9 +64,12 @@ public class HeLsAllocationCalculator implements AllocationCalculator {
 
         double p33 = 0.0, p67 = 0.0;
         if (!distances.isEmpty()) {
-            int n   = distances.size();
-            p33 = distances.get((int) Math.floor(n * 1.0 / 3.0));
-            p67 = distances.get((int) Math.floor(n * 2.0 / 3.0));
+            int n     = distances.size();
+            // Letzter Index des unteren bzw. mittleren Drittels -> exakt ~33% je Gruppe
+            int idx33 = Math.max(0, (int) Math.floor(n / 3.0) - 1);
+            int idx67 = Math.max(0, (int) Math.floor(2.0 * n / 3.0) - 1);
+            p33 = distances.get(idx33);
+            p67 = distances.get(idx67);
         }
         logger.info("HE_LS Travel_Distance Terzile: p33={} m, p67={} m ({} Agenten)",
                 (long) p33, (long) p67, distances.size());
@@ -125,7 +128,7 @@ public class HeLsAllocationCalculator implements AllocationCalculator {
     /** V_Age: <18=1, >65=2, 18–65=3. */
     static int ageToV(int age) {
         if (age < 18) return 1;
-        if (age > 65) return 2;
+        if (age > 67) return 2;
         return 3;
     }
 

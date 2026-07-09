@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Spatial Equity and Mobility Needs (SE_MN) allocation.
  *
- * Score: S = W1*Zone_Home + W2*Zone_Work + W3*Zone_Education + W4*PT + W5*Travel_Distance + W6*Travel_Time
+ * Score: S = W1*Zone_Home + W2*(Zone_Work + Zone_Education) + W3*PT + W4*Travel_Distance + W5*Travel_Time
  *
  *   Zone_Home/Work/Education – Zonenwert aus agent_params.csv (NaN=0), min-max normalisiert
  *                              (höhere Zonennummer = weiter außen = höherer Score)
@@ -28,14 +28,14 @@ public class SeMnAllocationCalculator implements AllocationCalculator {
     private static final Logger logger = LogManager.getLogger(SeMnAllocationCalculator.class);
 
     private final Map<String, AgentParametersPrecomputer.AgentParams> agentParams;
-    private final double w1, w2, w3, w4, w5, w6;
+    private final double w1, w2, w3, w4, w5;
 
     public SeMnAllocationCalculator(
             Map<String, AgentParametersPrecomputer.AgentParams> agentParams,
-            double w1, double w2, double w3, double w4, double w5, double w6) {
+            double w1, double w2, double w3, double w4, double w5) {
         this.agentParams = agentParams;
         this.w1 = w1; this.w2 = w2; this.w3 = w3;
-        this.w4 = w4; this.w5 = w5; this.w6 = w6;
+        this.w4 = w4; this.w5 = w5;
     }
 
     @Override
@@ -100,8 +100,8 @@ public class SeMnAllocationCalculator implements AllocationCalculator {
             double distScore      = normalize(r[4], minDist, maxDist);
             double timeScore      = normalize(r[5], minTime, maxTime);
 
-            double score = w1*zoneHomeScore + w2*zoneWorkScore + w3*zoneEduScore
-                         + w4*ptScore + w5*distScore + w6*timeScore;
+            double score = w1*zoneHomeScore + w2*(zoneWorkScore + zoneEduScore)
+                         + w3*ptScore + w4*distScore + w5*timeScore;
             scores.put(person.getId(), score);
             totalScore += score;
         }
@@ -151,7 +151,7 @@ public class SeMnAllocationCalculator implements AllocationCalculator {
     @Override
     public String getDescription() {
         return String.format(
-                "Spatial Equity + Mobility Needs (SE_MN): S = %.1f*ZoneHome + %.1f*ZoneWork + %.1f*ZoneEdu + %.1f*PT_inv + %.1f*Dist + %.1f*Time",
-                w1, w2, w3, w4, w5, w6);
+                "Spatial Equity + Mobility Needs (SE_MN): S = %.1f*ZoneHome + %.1f*(ZoneWork+ZoneEdu) + %.1f*PT_inv + %.1f*Dist + %.1f*Time",
+                w1, w2, w3, w4, w5);
     }
 }

@@ -147,43 +147,42 @@ public class MobilityCoinsParameters implements ParameterDefinition {
     
     // === Parameters for VERTICAL allocation ===
     // Gewichtungsfaktoren für S = W1*Income + W2*PT + W3*Veh + W4*Household
-    public double verticalWeightIncome    = 1.0;
-    public double verticalWeightPt        = 1.0;
-    public double verticalWeightVehicle   = 1.0;
-    public double verticalWeightHousehold = 1.0;
+    public double verticalWeightIncome    = 0.4;
+    public double verticalWeightPt        = 0.3;
+    public double verticalWeightVehicle   = 0.2;
+    public double verticalWeightHousehold = 0.1;
 
     // === Parameters for SE_MN allocation ===
-    // Gewichtungsfaktoren für S = W1*Zone_Home + W2*Zone_Work + W3*Zone_Education + W4*PT + W5*Travel_Distance + W6*Travel_Time
-    public double seMnWeightZoneHome      = 1.0;
-    public double seMnWeightZoneWork      = 1.0;
-    public double seMnWeightZoneEducation = 1.0;
-    public double seMnWeightPt            = 1.0;
-    public double seMnWeightDistance      = 1.0;
-    public double seMnWeightTime          = 1.0;
+    // Gewichtungsfaktoren für S = W1*Zone_Home + W2*(Zone_Work + Zone_Education) + W3*PT + W4*Travel_Distance + W5*Travel_Time
+    public double seMnWeightZoneHome      = 0.35;
+    public double seMnWeightZoneWorkEdu   = 0.25;
+    public double seMnWeightPt            = 0.10;
+    public double seMnWeightDistance      = 0.12;
+    public double seMnWeightTime          = 0.18;
 
     // === Parameters for HE_SOCIO allocation ===
     // Gewichtungsfaktoren für S = W1*V_Income + W2*V_Home + W3*V_Household
-    public double heSocioWeightIncome    = 1.0;
-    public double heSocioWeightHome      = 1.0;
-    public double heSocioWeightHousehold = 1.0;
+    public double heSocioWeightIncome    = 0.5;
+    public double heSocioWeightHome      = 0.2;
+    public double heSocioWeightHousehold = 0.3;
 
     // === Parameters for HE_LS allocation ===
     // Gewichtungsfaktoren für S = W1*V_Employment + W2*V_Age + W3*V_Travel_Distance
-    public double heLsWeightEmployment = 1.0;
-    public double heLsWeightAge        = 1.0;
-    public double heLsWeightDistance   = 1.0;
+    public double heLsWeightEmployment = 0.35;
+    public double heLsWeightAge        = 0.40;
+    public double heLsWeightDistance   = 0.25;
 
     // === Parameters for SUFFI allocation ===
     // Gewichtungsfaktoren für S = base + W1*ptNeed + W2*carNeed + W3*incomeNeed
     // base = 1/3 * (W1 + W2 + W3)
-    public double suffiWeightPt      = 1.0;
-    public double suffiWeightVehicle = 1.0;
-    public double suffiWeightIncome  = 1.0;
+    public double suffiWeightPt      = 0.3;
+    public double suffiWeightVehicle = 0.25;
+    public double suffiWeightIncome  = 0.45;
 
     // === Parameters for UTIL allocation ===
     // Gewichtungsfaktoren für S = W1*(SustainableModalSplit + PT_ModalSplit) + W2*PT
-    public double utilWeightModalSplit       = 1.0;
-    public double utilWeightPt               = 1.0;
+    public double utilWeightModalSplit       = 0.5;
+    public double utilWeightPt               = 0.5;
     // Schwellenwert für PT_ModalSplit (Anteil 0–1)
     public double utilPtModalSplitThreshold  = 0.155;
 

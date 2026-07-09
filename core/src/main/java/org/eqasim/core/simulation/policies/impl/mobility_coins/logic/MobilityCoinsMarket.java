@@ -426,8 +426,7 @@ public class MobilityCoinsMarket implements IterationEndsListener {
                     return new SeMnAllocationCalculator(
                             seMnAgentParams,
                             parameters.seMnWeightZoneHome,
-                            parameters.seMnWeightZoneWork,
-                            parameters.seMnWeightZoneEducation,
+                            parameters.seMnWeightZoneWorkEdu,
                             parameters.seMnWeightPt,
                             parameters.seMnWeightDistance,
                             parameters.seMnWeightTime);
