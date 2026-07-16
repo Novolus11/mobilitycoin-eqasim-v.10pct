@@ -489,6 +489,123 @@ public class MobilityCoinsMarket implements IterationEndsListener {
                             "HE_LS: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
                 }
 
+            case CAR:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("CAR: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new CarAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "CAR: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case ACCESS:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("ACCESS: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new AccessAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "ACCESS: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case HOUSEHOLD:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("HOUSEHOLD: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new HouseholdAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "HOUSEHOLD: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case LOCATION:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("LOCATION: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new LocationAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "LOCATION: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case TIME:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("TIME: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new TimeAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "TIME: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case DISTANCE:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("DISTANCE: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new DistanceAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "DISTANCE: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case EMPLOY:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("EMPLOY: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new EmployAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "EMPLOY: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case AGE:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("AGE: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new AgeAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "AGE: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
+            case INCOME_N:
+                if (parameters.agentParamsFilePath == null || parameters.agentParamsFilePath.isBlank()) {
+                    logger.warn("INCOME_N: agentParamsFilePath nicht gesetzt – Fallback auf UNIFORM");
+                    return new UniformAllocationCalculator();
+                }
+                try {
+                    return new IncomeNAllocationCalculator(
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "INCOME_N: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
+                }
+
             default:
                 logger.warn("Unknown allocation scheme: {}, using UNIFORM", parameters.allocationScheme);
                 return new UniformAllocationCalculator();
@@ -1071,14 +1188,14 @@ public class MobilityCoinsMarket implements IterationEndsListener {
         for (Person person : population.getPersons().values()) {
             double personBalance = getInitialCoins(person);
             double totalCoinsDelta = 0.0;
-            
+
             // Calculate total coins delta for this person
             for (Trip trip : TripStructureUtils.getTrips(person.getSelectedPlan())) {
                 MobilityCoinsDistances distances = MobilityCoinsDistances.calculate(trip.getTripElements());
                 double coinsDelta = calculator.calculateCoinDelta(distances, person);
                 totalCoinsDelta += coinsDelta;
             }
-            
+
             // Store initial and final wallet balances
             initialWallets.put(person.getId(), personBalance);
             finalWallets.put(person.getId(), personBalance + totalCoinsDelta);

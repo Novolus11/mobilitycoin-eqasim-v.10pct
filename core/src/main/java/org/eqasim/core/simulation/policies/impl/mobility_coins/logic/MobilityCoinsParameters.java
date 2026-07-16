@@ -35,12 +35,21 @@ public class MobilityCoinsParameters implements ParameterDefinition {
         INCOME,           // Coins allocated inversely to income (low income gets more)
         ACCESSIBILITY,    // Coins allocated based on accessibility (low accessibility gets more)
         AGE_EXEMPT,       // Young (<18) and elderly (>65) are exempt; working-age carry the burden
-        SUFFI,            // Sufficientarianism: TODO
-        VERTICAL,         // Vertical Equity: TODO
-        SE_MN,            // Spatial Equity and Mobility Needs: TODO
-        UTIL,             // Utilitarianism: TODO
-        HE_SOCIO,         // Horizontal Equity Socioeconomic: TODO
-        HE_LS             // Horizontal Equity Life Stage: TODO
+        SUFFI,            // Sufficientarianism
+        VERTICAL,         // Vertical Equity
+        SE_MN,            // Spatial Equity and Mobility Needs
+        UTIL,             // Utilitarianism
+        HE_SOCIO,         // Horizontal Equity Socioeconomic
+        HE_LS,            // Horizontal Equity Life Stage
+        CAR,              // Single-factor: car usage
+        ACCESS,           // Single-factor: accessibility
+        HOUSEHOLD,        // Single-factor: household size
+        LOCATION,         // Single-factor: home zone / location
+        TIME,             // Single-factor: travel time
+        DISTANCE,         // Single-factor: travel distance
+        EMPLOY,           // Single-factor: employment status
+        AGE,              // Single-factor: age
+        INCOME_N          // Income-based allocation (new variant)
     }
 
     // Allocation scheme to use (default is UNIFORM for backward compatibility)
@@ -69,8 +78,8 @@ public class MobilityCoinsParameters implements ParameterDefinition {
 
     // M-term betas (Term 2: deviation from per-trip budget × market price)
     // beta_loss_M > beta_gain_M reflects classical prospect-theory loss aversion
-    public double beta_gain_M = 1.0;
-    public double beta_loss_M = 2.0;
+    public double beta_gain_M = 0.731;
+    public double beta_loss_M = 0.103;
 
 
     // blending factor when updating market price
@@ -147,42 +156,42 @@ public class MobilityCoinsParameters implements ParameterDefinition {
     
     // === Parameters for VERTICAL allocation ===
     // Gewichtungsfaktoren für S = W1*Income + W2*PT + W3*Veh + W4*Household
-    public double verticalWeightIncome    = 0.4;
-    public double verticalWeightPt        = 0.3;
-    public double verticalWeightVehicle   = 0.2;
-    public double verticalWeightHousehold = 0.1;
+    public double verticalWeightIncome    = 1.0;
+    public double verticalWeightPt        = 1.0;
+    public double verticalWeightVehicle   = 1.0;
+    public double verticalWeightHousehold = 1.0;
 
     // === Parameters for SE_MN allocation ===
     // Gewichtungsfaktoren für S = W1*Zone_Home + W2*(Zone_Work + Zone_Education) + W3*PT + W4*Travel_Distance + W5*Travel_Time
-    public double seMnWeightZoneHome      = 0.35;
-    public double seMnWeightZoneWorkEdu   = 0.25;
-    public double seMnWeightPt            = 0.10;
-    public double seMnWeightDistance      = 0.12;
-    public double seMnWeightTime          = 0.18;
+    public double seMnWeightZoneHome      = 1.0;
+    public double seMnWeightZoneWorkEdu   = 1.0;
+    public double seMnWeightPt            = 1.0;
+    public double seMnWeightDistance      = 1.0;
+    public double seMnWeightTime          = 1.0;
 
     // === Parameters for HE_SOCIO allocation ===
     // Gewichtungsfaktoren für S = W1*V_Income + W2*V_Home + W3*V_Household
-    public double heSocioWeightIncome    = 0.5;
-    public double heSocioWeightHome      = 0.2;
-    public double heSocioWeightHousehold = 0.3;
+    public double heSocioWeightIncome    = 1.0;
+    public double heSocioWeightHome      = 1.0;
+    public double heSocioWeightHousehold = 1.0;
 
     // === Parameters for HE_LS allocation ===
     // Gewichtungsfaktoren für S = W1*V_Employment + W2*V_Age + W3*V_Travel_Distance
-    public double heLsWeightEmployment = 0.35;
-    public double heLsWeightAge        = 0.40;
-    public double heLsWeightDistance   = 0.25;
+    public double heLsWeightEmployment = 1.0;
+    public double heLsWeightAge        = 1.0;
+    public double heLsWeightDistance   = 1.0;
 
     // === Parameters for SUFFI allocation ===
     // Gewichtungsfaktoren für S = base + W1*ptNeed + W2*carNeed + W3*incomeNeed
     // base = 1/3 * (W1 + W2 + W3)
-    public double suffiWeightPt      = 0.3;
-    public double suffiWeightVehicle = 0.25;
-    public double suffiWeightIncome  = 0.45;
+    public double suffiWeightPt      = 1.0;
+    public double suffiWeightVehicle = 1.0;
+    public double suffiWeightIncome  = 1.0;
 
     // === Parameters for UTIL allocation ===
     // Gewichtungsfaktoren für S = W1*(SustainableModalSplit + PT_ModalSplit) + W2*PT
-    public double utilWeightModalSplit       = 0.5;
-    public double utilWeightPt               = 0.5;
+    public double utilWeightModalSplit       = 1.0;
+    public double utilWeightPt               = 1.0;
     // Schwellenwert für PT_ModalSplit (Anteil 0–1)
     public double utilPtModalSplitThreshold  = 0.155;
 

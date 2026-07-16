@@ -1136,8 +1136,8 @@ public class AgentParametersPrecomputer {
         }
 
         java.io.File zonesSetupDir = new java.io.File(scenarioDir, "bavaria_zones_setup");
-        java.io.File zonesGpkgFile = new java.io.File(zonesSetupDir, "new_bavaria_zones.gpkg");
-        java.io.File pythonScript  = new java.io.File(zonesSetupDir, "new_bavaria_zones.py");
+        java.io.File zonesGpkgFile = new java.io.File(zonesSetupDir, "burgess_bavaria_zones.gpkg");
+        java.io.File pythonScript  = new java.io.File(zonesSetupDir, "burgess_bavaria_zones.py");
 
         if (!zonesSetupDir.exists() || !zonesSetupDir.isDirectory()) {
             System.err.println(
@@ -1151,7 +1151,7 @@ public class AgentParametersPrecomputer {
         if (!pythonScript.exists()) {
             System.err.println(
                     "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" +
-                    "\n!!!Achtung!!! \"new_bavaria_zones.py\" fehlt im \"bavaria_zones_setup\"-Ordner!" +
+                    "\n!!!Achtung!!! \"burgess_bavaria_zones.py\" fehlt im \"bavaria_zones_setup\"-Ordner!" +
                     "\n  Erwarteter Pfad: " + pythonScript.getAbsolutePath() +
                     "\n  Vorgang wird abgebrochen." +
                     "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -1199,7 +1199,7 @@ public class AgentParametersPrecomputer {
                         "\n!!!Achtung!!! GPKG konnte nicht erstellt werden!" +
                         "\n  Bitte Python-Skript manuell ausführen (conda -n bavaria):" +
                         "\n    cd " + zonesSetupDir.getAbsolutePath() +
-                        "\n    conda run -n bavaria python new_bavaria_zones.py" +
+                        "\n    conda run -n bavaria python burgess_bavaria_zones.py" +
                         "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 System.exit(1);
             }
@@ -1296,10 +1296,10 @@ public class AgentParametersPrecomputer {
      *   Zone 10 – Übriges Oberbayern (>70km außerhalb Stadtgrenze)
      */
     /**
-     * Lädt die 10 vorberechneten Zonen-Polygone aus der Python-generierten
-     * zones_wkt.csv und weist Koordinaten (EPSG:25832) per PreparedGeometry zu.
+     * Lädt die 5 vorberechneten Zonen-Polygone aus der Python-generierten
+     * burgess_bavaria_zones.gpkg und weist Koordinaten (EPSG:25832) per PreparedGeometry zu.
      *
-     * Die Zonen werden einmalig in Python (new_bavaria_zones.py) mit Shapely/GeoPandas
+     * Die Zonen werden einmalig in Python (burgess_bavaria_zones.py) mit Shapely/GeoPandas
      * berechnet und als WKT-CSV exportiert. Java liest diese Datei und erstellt
      * PreparedGeometry-Objekte für schnelle, thread-sichere Punkt-in-Polygon-Tests.
      */
@@ -1311,7 +1311,7 @@ public class AgentParametersPrecomputer {
 
         private ZoneResolver(Geometry[] zones, GeometryFactory factory) {
             this.factory = factory;
-            this.preparedZones = new org.locationtech.jts.geom.prep.PreparedGeometry[10];
+            this.preparedZones = new org.locationtech.jts.geom.prep.PreparedGeometry[5];
             for (int i = 0; i < zones.length; i++) {
                 if (zones[i] != null && !zones[i].isEmpty()) {
                     preparedZones[i] = org.locationtech.jts.geom.prep.PreparedGeometryFactory.prepare(zones[i]);
@@ -1324,15 +1324,15 @@ public class AgentParametersPrecomputer {
         }
 
         /**
-         * Lädt die 10 Zonen-Polygone aus der Python-generierten new_bavaria_zones.gpkg.
-         * Die GPKG enthält Layer "zones" mit Spalten "zone" (int, 1-10) und "geometry" (EPSG:25832).
+         * Lädt die 5 Zonen-Polygone aus der Python-generierten burgess_bavaria_zones.gpkg.
+         * Die GPKG enthält Layer "zones" mit Spalten "zone" (int, 1-5) und "geometry" (EPSG:25832).
          */
         static ZoneResolver create(String zonesSetupDir) throws Exception {
-            java.io.File gpkgFile = new java.io.File(zonesSetupDir, "new_bavaria_zones.gpkg");
+            java.io.File gpkgFile = new java.io.File(zonesSetupDir, "burgess_bavaria_zones.gpkg");
             logger.info("Lade Zonen aus GPKG: {}", gpkgFile.getAbsolutePath());
 
             GeometryFactory factory = new GeometryFactory();
-            Geometry[] zones = new Geometry[10];
+            Geometry[] zones = new Geometry[5];
 
             // GeoPackage direkt öffnen (kein DataStoreFinder nötig – GeoPackage ist bereits importiert)
             GeoPackage gpkg = new GeoPackage(gpkgFile);
@@ -1345,7 +1345,7 @@ public class AgentParametersPrecomputer {
                             Object zoneAttr = feat.getAttribute("zone");
                             if (zoneAttr == null) continue;
                             int z = ((Number) zoneAttr).intValue();
-                            if (z >= 1 && z <= 10) {
+                            if (z >= 1 && z <= 5) {
                                 zones[z - 1] = (Geometry) feat.getDefaultGeometry();
                             }
                         }
@@ -1357,12 +1357,12 @@ public class AgentParametersPrecomputer {
 
             long loaded = java.util.Arrays.stream(zones)
                     .filter(g -> g != null && !g.isEmpty()).count();
-            logger.info("{}/10 Zonen aus GPKG geladen.", loaded);
+            logger.info("{}/5 Zonen aus GPKG geladen.", loaded);
 
             return new ZoneResolver(zones, factory);
         }
 
-        /** Gibt Zonennummer 1-10 zurück, oder "NaN" wenn keine Zone passt. */
+        /** Gibt Zonennummer 1-5 zurück, oder "NaN" wenn keine Zone passt. */
         String resolveZone(Coord coord) {
             if (coord == null) return "NaN";
             Point point = factory.createPoint(new Coordinate(coord.getX(), coord.getY()));

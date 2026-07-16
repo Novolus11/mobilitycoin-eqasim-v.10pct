@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * Score: S = W1*V_Income + W2*V_Home + W3*V_Household
  *
- * Keine Normalisierung – V-Werte sind direkte Tabellenwerte 1–5:
+ * V-Werte werden per Fallunterscheidung ermittelt und anschließend min-max-normalisiert:
  *
  *   V_Income   (Mittelpunkt des income-Strings):
  *              5 = 500–1250 EUR/Monat
@@ -26,9 +26,9 @@ import java.util.Map;
  *   V_Home     (home_zone):
  *              1 = Zone 1
  *              2 = Zone 2
- *              3 = Zone 3–5
- *              4 = Zone 6–8
- *              5 = Zone 9–10
+ *              3 = Zone 3
+ *              4 = Zone 4
+ *              5 = Zone 5
  *
  *   V_Household (household_size):
  *              1 = 1 Person
@@ -57,28 +57,48 @@ public class HeSocioAllocationCalculator implements AllocationCalculator {
     @Override
     public Map<Id<Person>, Double> calculateAllocations(Population population, double totalCoins) {
 
-        // Pass 1: Scores berechnen (keine Normalisierung – direkte V-Werte)
+        // Pass 1: V-Werte per Lookup berechnen, Min/Max je Komponente bestimmen
+        Map<String, int[]> rawV = new HashMap<>(); // [vIncome, vHome, vHousehold]
+        int minI = Integer.MAX_VALUE, maxI = Integer.MIN_VALUE;
+        int minH = Integer.MAX_VALUE, maxH = Integer.MIN_VALUE;
+        int minHH = Integer.MAX_VALUE, maxHH = Integer.MIN_VALUE;
+
+        for (Person person : population.getPersons().values()) {
+            String pid = person.getId().toString();
+            AgentParametersPrecomputer.AgentParams ap = agentParams.get(pid);
+            if (ap == null) continue;
+
+            int vIncome    = incomeToV(ap.income);
+            int vHome      = zoneToV(ap.homeZone);
+            int vHousehold = householdToV(ap.householdSize);
+            rawV.put(pid, new int[]{vIncome, vHome, vHousehold});
+
+            if (vIncome    < minI)  minI  = vIncome;    if (vIncome    > maxI)  maxI  = vIncome;
+            if (vHome      < minH)  minH  = vHome;      if (vHome      > maxH)  maxH  = vHome;
+            if (vHousehold < minHH) minHH = vHousehold; if (vHousehold > maxHH) maxHH = vHousehold;
+        }
+
+        // Pass 2: Scores mit normalisierten V-Werten berechnen
         Map<Id<Person>, Double> scores = new HashMap<>();
         double totalScore = 0.0;
 
         for (Person person : population.getPersons().values()) {
             String pid = person.getId().toString();
-            AgentParametersPrecomputer.AgentParams ap = agentParams.get(pid);
-
+            int[] v = rawV.get(pid);
             double score;
-            if (ap == null) {
+            if (v == null) {
                 score = 0.0;
             } else {
-                int vIncome    = incomeToV(ap.income);
-                int vHome      = zoneToV(ap.homeZone);
-                int vHousehold = householdToV(ap.householdSize);
-                score = w1 * vIncome + w2 * vHome + w3 * vHousehold;
+                double normIncome    = normalize(v[0], minI,  maxI);
+                double normHome      = normalize(v[1], minH,  maxH);
+                double normHousehold = normalize(v[2], minHH, maxHH);
+                score = w1 * normIncome + w2 * normHome + w3 * normHousehold;
             }
             scores.put(person.getId(), score);
             totalScore += score;
         }
 
-        // Pass 2: Proportional zu Gesamtscore verteilen
+        // Pass 3: Proportional zu Gesamtscore verteilen
         Map<Id<Person>, Double> allocations = new HashMap<>();
         if (totalScore <= 0) {
             logger.warn("HE_SOCIO: Gesamtscore ist 0 – Fallback auf gleichmäßige Verteilung.");
@@ -95,6 +115,11 @@ public class HeSocioAllocationCalculator implements AllocationCalculator {
 
         logStats(allocations);
         return allocations;
+    }
+
+    private static double normalize(int value, int min, int max) {
+        if (max <= min) return 0.5;
+        return (double)(value - min) / (max - min);
     }
 
     // -------------------------------------------------------------------------
@@ -142,11 +167,11 @@ public class HeSocioAllocationCalculator implements AllocationCalculator {
         if (zone == null || zone.isBlank() || "NaN".equalsIgnoreCase(zone)) return 0;
         int z;
         try { z = Integer.parseInt(zone.trim()); } catch (NumberFormatException e) { return 0; }
-        if (z == 1)              return 1;
-        if (z == 2)              return 2;
-        if (z >= 3 && z <= 5)   return 3;
-        if (z >= 6 && z <= 8)   return 4;
-        if (z >= 9 && z <= 10)  return 5;
+        if (z == 1) return 1;
+        if (z == 2) return 2;
+        if (z == 3) return 3;
+        if (z == 4) return 4;
+        if (z == 5) return 5;
         return 0;
     }
 

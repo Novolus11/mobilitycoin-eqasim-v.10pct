@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * Score: S = W1*V_Employment + W2*V_Age + W3*V_Travel_Distance
  *
- * Keine Normalisierung – V-Werte sind direkte Stufen:
+ * V-Werte werden per Fallunterscheidung ermittelt und anschließend min-max-normalisiert:
  *
  *   V_Employment (employed + homeoffice):
  *     1 = nicht erwerbstätig (employed=false)
@@ -74,28 +74,48 @@ public class HeLsAllocationCalculator implements AllocationCalculator {
         logger.info("HE_LS Travel_Distance Terzile: p33={} m, p67={} m ({} Agenten)",
                 (long) p33, (long) p67, distances.size());
 
-        // --- Pass 1: Scores berechnen ---
+        // --- Pass 1: V-Werte per Lookup berechnen, Min/Max je Komponente bestimmen ---
+        Map<String, int[]> rawV = new HashMap<>(); // [vEmployment, vAge, vDist]
+        int minE = Integer.MAX_VALUE, maxE = Integer.MIN_VALUE;
+        int minA = Integer.MAX_VALUE, maxA = Integer.MIN_VALUE;
+        int minD = Integer.MAX_VALUE, maxD = Integer.MIN_VALUE;
+
+        for (Person person : population.getPersons().values()) {
+            String pid = person.getId().toString();
+            AgentParametersPrecomputer.AgentParams ap = agentParams.get(pid);
+            if (ap == null) continue;
+
+            int vEmployment = employmentToV(ap.employed, ap.homeoffice);
+            int vAge        = ageToV(ap.age);
+            int vDist       = distanceToV(ap.travelDistanceCarCarpPtM, p33, p67);
+            rawV.put(pid, new int[]{vEmployment, vAge, vDist});
+
+            if (vEmployment < minE) minE = vEmployment; if (vEmployment > maxE) maxE = vEmployment;
+            if (vAge        < minA) minA = vAge;         if (vAge        > maxA) maxA = vAge;
+            if (vDist       < minD) minD = vDist;        if (vDist       > maxD) maxD = vDist;
+        }
+
+        // --- Pass 2: Scores mit normalisierten V-Werten berechnen ---
         Map<Id<Person>, Double> scores = new HashMap<>();
         double totalScore = 0.0;
 
         for (Person person : population.getPersons().values()) {
             String pid = person.getId().toString();
-            AgentParametersPrecomputer.AgentParams ap = agentParams.get(pid);
-
+            int[] v = rawV.get(pid);
             double score;
-            if (ap == null) {
+            if (v == null) {
                 score = 0.0;
             } else {
-                int vEmployment = employmentToV(ap.employed, ap.homeoffice);
-                int vAge        = ageToV(ap.age);
-                int vDist       = distanceToV(ap.travelDistanceCarCarpPtM, p33, p67);
-                score = w1 * vEmployment + w2 * vAge + w3 * vDist;
+                double normEmployment = normalize(v[0], minE, maxE);
+                double normAge        = normalize(v[1], minA, maxA);
+                double normDist       = normalize(v[2], minD, maxD);
+                score = w1 * normEmployment + w2 * normAge + w3 * normDist;
             }
             scores.put(person.getId(), score);
             totalScore += score;
         }
 
-        // --- Pass 2: Proportional zu Gesamtscore verteilen ---
+        // --- Pass 3: Proportional zu Gesamtscore verteilen ---
         Map<Id<Person>, Double> allocations = new HashMap<>();
         if (totalScore <= 0) {
             logger.warn("HE_LS: Gesamtscore ist 0 – Fallback auf gleichmäßige Verteilung.");
@@ -140,6 +160,11 @@ public class HeLsAllocationCalculator implements AllocationCalculator {
         if (distanceM <= p33) return 1;
         if (distanceM <= p67) return 2;
         return 3;
+    }
+
+    private static double normalize(int value, int min, int max) {
+        if (max <= min) return 0.5;
+        return (double)(value - min) / (max - min);
     }
 
     private void logStats(Map<Id<Person>, Double> allocations) {

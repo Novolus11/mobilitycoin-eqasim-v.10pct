@@ -52,13 +52,25 @@ public class MobilityCoinsUtilityPenalty implements UtilityPenalty {
 			base_utility = parameters.beta_gain_u_per_coin * coinValue_EUR;
 		}
 
-		// Term 2: M term — deviation from per-trip budget
-		// Wallet attribute equals I_initial during replanning (reset at end of each iteration)
+		// Term 2: M term — distance-proportional budget per trip
+		// Budget share for this trip = initialAllocation * (tripN_dist / tripTotal_dist)
 		Object walletAttr = person.getAttributes().getAttribute(MobilityCoinsMarket.WALLET_ATTRIBUTE);
 		double initialAllocation = (walletAttr != null) ? (Double) walletAttr : 0.0;
-		int numberOfTrips = TripStructureUtils.getTrips(person.getSelectedPlan()).size();
-		if (numberOfTrips > 0) {
-			double M = (initialAllocation / numberOfTrips) + deltaCoins;
+
+		// Total distance of the current trip (all modes, in km)
+		double tripN_dist = distances.car_km() + distances.carPassenger_km()
+				+ distances.transit_km() + distances.bicycle_km() + distances.walk_km();
+
+		// Total distance of all trips in the plan (in km)
+		double tripTotal_dist = 0.0;
+		for (TripStructureUtils.Trip t : TripStructureUtils.getTrips(person.getSelectedPlan())) {
+			MobilityCoinsDistances d = MobilityCoinsDistances.calculate(t.getTripElements());
+			tripTotal_dist += d.car_km() + d.carPassenger_km() + d.transit_km()
+					+ d.bicycle_km() + d.walk_km();
+		}
+
+		if (tripTotal_dist > 0.0) {
+			double M = initialAllocation * (tripN_dist / tripTotal_dist) + deltaCoins;
 			double M_EUR = M * marketPrice;
 			if (M > 0.0) {
 				base_utility += parameters.beta_gain_M * M_EUR;

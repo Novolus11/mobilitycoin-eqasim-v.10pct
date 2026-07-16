@@ -3,6 +3,7 @@ package org.eqasim.bavaria;
 import java.util.Collections;
 import java.util.Set;
 
+import com.google.inject.multibindings.Multibinder;
 import org.eqasim.core.simulation.vdf.VDFConfigGroup;
 import org.eqasim.core.simulation.vdf.engine.VDFEngineConfigGroup;
 import org.matsim.api.core.v01.Scenario;
@@ -10,8 +11,11 @@ import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.simwrapper.Dashboard;
+import org.matsim.simwrapper.SimWrapperModule;
 
 public class RunSimulation {
 	static public void main(String[] args) throws ConfigurationException {
@@ -54,6 +58,19 @@ public class RunSimulation {
 
 		Controler controller = new Controler(scenario);
 		configurator.configureController(controller);
+
+		// SimWrapper: Netzwerk-Dashboard automatisch beim Simulationsende erzeugen
+		controller.addOverridingModule(new SimWrapperModule());
+		controller.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				Multibinder.newSetBinder(binder(), Dashboard.class)
+						.addBinding()
+						.toInstance(new MoCoNetworkDashboard());
+				// GeoJSON mit WGS84-Koordinaten schreiben (Atlantis → WGS84)
+				addControlerListenerBinding().to(MoCoNetworkGeoJsonWriter.class);
+			}
+		});
 
 		controller.run();
 	}
