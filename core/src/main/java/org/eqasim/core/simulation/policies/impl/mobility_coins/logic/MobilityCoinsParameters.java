@@ -175,6 +175,11 @@ public class MobilityCoinsParameters implements ParameterDefinition {
     public double heSocioWeightHome      = 1.0;
     public double heSocioWeightHousehold = 1.0;
 
+    // === Parameters for LOCATION allocation ===
+    // Gewichtungsfaktoren für S = W1*Zone_Home + W2*(Zone_Work + Zone_Education)
+    public double locationWeightHome   = 0.6;
+    public double locationWeightWorkEdu = 0.4;
+
     // === Parameters for HE_LS allocation ===
     // Gewichtungsfaktoren für S = W1*V_Employment + W2*V_Age + W3*V_Travel_Distance
     public double heLsWeightEmployment = 1.0;

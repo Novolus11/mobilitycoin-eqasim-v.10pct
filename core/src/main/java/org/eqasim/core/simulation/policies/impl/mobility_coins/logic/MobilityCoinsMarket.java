@@ -535,7 +535,9 @@ public class MobilityCoinsMarket implements IterationEndsListener {
                 }
                 try {
                     return new LocationAllocationCalculator(
-                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath));
+                            AgentParametersPrecomputer.readResults(parameters.agentParamsFilePath),
+                            parameters.locationWeightHome,
+                            parameters.locationWeightWorkEdu);
                 } catch (IOException e) {
                     throw new RuntimeException(
                             "LOCATION: Fehler beim Lesen von " + parameters.agentParamsFilePath, e);
