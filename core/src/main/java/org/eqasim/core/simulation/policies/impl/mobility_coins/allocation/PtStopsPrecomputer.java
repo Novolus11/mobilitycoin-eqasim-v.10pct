@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * Usage (standalone):
  *   java -cp bavaria-1.5.0.jar \
  *        org.eqasim.core.simulation.policies.impl.mobility_coins.allocation.PtStopsPrecomputer \
- *        --config bavaria_1pct_config.xml \
+ *        --config bavaria_10pct_config.xml \
  *        --output pt_stops.csv
  */
 public class PtStopsPrecomputer {
@@ -265,7 +265,7 @@ public class PtStopsPrecomputer {
         System.out.println("Usage:");
         System.out.println("  java -Xmx16g -cp bavaria-1.5.0.jar \\");
         System.out.println("       " + PtStopsPrecomputer.class.getName());
-        System.out.println("       --config <bavaria_1pct_config.xml>");
+        System.out.println("       --config <bavaria_10pct_config.xml>");
         System.out.println("       --output <pt_stops.csv>");
         System.out.println();
         System.out.println("Output columns: person_id;pt_home;pt_work;pt_education");

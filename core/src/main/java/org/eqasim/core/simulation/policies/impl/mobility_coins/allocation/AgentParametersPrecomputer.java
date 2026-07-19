@@ -69,7 +69,7 @@ import java.util.stream.Collectors;
  * Einmalige Generierung (standalone):
  *   java -Xmx16g -cp bavaria-1.5.0.jar \
  *        org.eqasim.core.simulation.policies.impl.mobility_coins.allocation.AgentParametersPrecomputer \
- *        --config bavaria_1pct_config.xml \
+ *        --config bavaria_10pct_config.xml \
  *        --output agent_params.csv
  *
  * Spalten (alle Schemes benutzen diese eine Datei):
@@ -197,7 +197,7 @@ public class AgentParametersPrecomputer {
     /**
      * Standalone-Verwendung mit externer Pipeline-Haushaltsgrössen-CSV.
      * Die CSV muss die Spalten "household_id" und "household_size" enthalten
-     * (z.B. bavaria_1pct_households.csv aus dem Pipeline-Output).
+     * (z.B. bavaria_10pct_households.csv aus dem Pipeline-Output).
      * Die Original-Haushaltsgrößen bleiben so auch nach dem 1%-Downsampling erhalten.
      */
     public AgentParametersPrecomputer(Scenario scenario, String householdsCsvPath) {
@@ -235,7 +235,7 @@ public class AgentParametersPrecomputer {
     }
 
     /**
-     * Lädt Haushaltsgrößen aus der Pipeline-Output-CSV (z.B. bavaria_1pct_households.csv).
+     * Lädt Haushaltsgrößen aus der Pipeline-Output-CSV (z.B. bavaria_10pct_households.csv).
      * Erwartet Spalten "household_id" und "household_size".
      * Vorteil: enthält die Original-Haushaltsgrößen vor dem 1%-Downsampling.
      */
@@ -290,7 +290,7 @@ public class AgentParametersPrecomputer {
     }
 
     /**
-     * Haushaltsgröße aus Households-Objekt (bavarian Scenario: bavaria_1pct_households.xml.gz).
+     * Haushaltsgröße aus Households-Objekt (bavarian Scenario: bavaria_10pct_households.xml.gz).
      * Fallback auf householdId-Attributzählung wenn keine Household-Daten verfügbar.
      */
     private static Map<Id<Person>, String> buildHouseholdSizesFromHouseholds(
@@ -1115,7 +1115,7 @@ public class AgentParametersPrecomputer {
                     "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" +
                     "\n!!!Achtung!!! \"" + householdsFile.getName() + "\" muss noch in den \"scenario\"-Ordner eingefügt werden!" +
                     "\n  Erwarteter Pfad: " + householdsFile.getAbsolutePath() +
-                    "\n  Quelle: Pipeline-Output (z.B. bavaria_1pct_households.csv)" +
+                    "\n  Quelle: Pipeline-Output (z.B. bavaria_10pct_households.csv)" +
                     "\n  Vorgang wird abgebrochen." +
                     "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             System.exit(1);
@@ -1261,7 +1261,7 @@ public class AgentParametersPrecomputer {
         System.out.println("Verwendung:");
         System.out.println("  java -Xmx16g -cp bavaria-1.5.0.jar \\");
         System.out.println("       " + AgentParametersPrecomputer.class.getName());
-        System.out.println("       --config <bavaria_1pct_config.xml>");
+        System.out.println("       --config <bavaria_10pct_config.xml>");
         System.out.println("       --output <agent_params.csv>");
         System.out.println();
         System.out.println("Pflicht-Dateien im scenario/-Ordner (Abbruch wenn fehlend):");
